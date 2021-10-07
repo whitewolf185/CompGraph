@@ -3,12 +3,18 @@ using System.Numerics;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Additions;
 using GLib;
 
 using Gtk;
 
 namespace MeshClass
 {
+    public struct RGB{
+        public double R;
+        public double G;
+        public double B;
+    }
     public class Vertex
     {
         public Vector4 Point;
@@ -27,6 +33,7 @@ namespace MeshClass
     public class Polygon
     {
         public List<Vertex> Vertexes;
+        public RGB Color;
         
         public Polygon(List<Vertex> vertexes)
         {
@@ -60,8 +67,7 @@ namespace MeshClass
         private List<Polygon> Polygons;
         public List<Polygon> TransformedPolygons;
 
-        public Mesh(List<Vertex> vertices, List<List<int>> polygons)
-        {
+        public Mesh(List<Vertex> vertices, List<List<int>> polygons){
             Vertices = new List<Vertex>(vertices);
             TransformedVertices = new List<Vertex>(vertices.Count);
             for (int i = 0; i < TransformedVertices.Capacity; ++i)

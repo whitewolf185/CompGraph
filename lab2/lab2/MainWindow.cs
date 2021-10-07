@@ -5,17 +5,21 @@ using Gtk;
 using Cairo;
 using UI = Gtk.Builder.ObjectAttribute;
 using MeshClass;
+using Additions;
 
 namespace CG
 {
-    class MainWindow : Window
-    {
+    class MainWindow : Gtk.Window{
+        public const int POLYGONS = 5;
+        #region UI
+
         [UI] private DrawingArea _canvas = null;
 
         [UI] private CheckButton _allowZBuffer = null;
         [UI] private CheckButton _allowNormals = null;
         [UI] private CheckButton _allowWireframe = null;
         [UI] private CheckButton _allowInvisPoly = null;
+        [UI] private CheckButton _allowRandom = null;
 
         [UI] private Adjustment _xRotation = null;
         [UI] private Adjustment _yRotation = null;
@@ -45,28 +49,36 @@ namespace CG
         [UI] private Adjustment _m43 = null;
         [UI] private Adjustment _m44 = null;
 
+        #endregion
+
         private Matrix4x4 _defaultTransformationMatrix;
         private Matrix4x4 _transformationMatrix = Matrix4x4.Identity;
+
+        #region Colors
+
+        private ColorControl _canvasColor = new ColorControl(.2, .2, .2);
+        private List<ColorControl> _polygonColor = new List<ColorControl>();
+        private ColorControl _lineColor = new ColorControl(.5, 1, .5);
+        private ColorControl _normalColor = new ColorControl(.0, 1, 1);
+
+        #endregion
         
         private Mesh _myFigure = new Mesh(new List<Vertex> 
             {
-                new Vertex (new Vector4(-.5f, -.5f, -.5f, 1)),
-                new Vertex (new Vector4(.5f, -.5f, -.5f, 1)),
-                new Vertex (new Vector4(.5f, .5f, -.5f, 1)),
-                new Vertex (new Vector4(-.5f, .5f, -.5f, 1)),
-                new Vertex (new Vector4(-.5f, -.5f, .5f, 1)),
-                new Vertex (new Vector4(.5f, -.5f, .5f, 1)),
-                new Vertex (new Vector4(.5f, .5f, .5f, 1)),
-                new Vertex (new Vector4(-.5f, .5f, .5f, 1))
+                new Vertex (new Vector4(-.5f, -.5f, -.5f, 1)),// 0
+                new Vertex (new Vector4(.5f, -.5f, -.5f, 1)), // 1
+                new Vertex (new Vector4(.5f, .5f, -.5f, 1)),  // 2
+                new Vertex (new Vector4(-.5f, .5f, -.5f, 1)), // 3
+                new Vertex (new Vector4(0f, -.5f, .5f, 1)),   // 4
+                new Vertex (new Vector4(0f, .5f, .5f, 1)),    // 5
             }, 
             new List<List<int>>
             {
                 new List<int> {0, 1, 2, 3},
-                new List<int> {7, 6, 5, 4},
-                new List<int> {1, 0, 4, 5},
-                new List<int> {2, 1, 5, 6},
-                new List<int> {3, 2, 6, 7},
-                new List<int> {0, 3, 7, 4}
+                new List<int> {3, 5, 4, 0},
+                new List<int> {1, 4, 5, 2},
+                new List<int> {4,1,0},
+                new List<int> {5,3,2}
             }
         );
 
@@ -81,16 +93,40 @@ namespace CG
             CalculateTranformationMatrix();
         }
 
+        private void createColor_toPolygonColor(){
+            for (int i = 0; i < POLYGONS; i++){
+                _polygonColor.Add(new ColorControl(0, .2, .2));
+            }
+        }
+
+        private void SetColor_toPolygonColor(){
+            for (int i = 0; i < POLYGONS; i++){
+                _polygonColor[i].SetColor(0, .2, .2);
+            }
+        }
+
+        private void Random_PolygonColor(){
+            for (int i = 0; i < POLYGONS; i++){
+                _polygonColor[i].GenerateColor();
+            }
+        }
+
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
             DeleteEvent += (o, args) => Application.Quit();
+            
+            // нужна для инициализации list
+            createColor_toPolygonColor();
 
-            _canvas.Drawn += (o, args) =>
-            {
-                var context = args.Cr;
+            if (_allowRandom != null &&_allowRandom.Active){
                 
-                context.SetSourceRGB(.2, .2, .2);
+            }
+
+            _canvas.Drawn += (o, args) => {
+                var context = args.Cr;
+
+                context.SetSourceRGB(_canvasColor.R, _canvasColor.G, _canvasColor.B);
                 context.Paint();
 
                 context.Antialias = Antialias.Subpixel;      // Сглаживание для более гладких линий     
@@ -133,14 +169,23 @@ namespace CG
             _allowWireframe.Toggled += (o, args) => { _canvas.QueueDraw();};
             _allowInvisPoly.Toggled += (o, args) => { _canvas.QueueDraw();};
             _allowZBuffer.Toggled += (o, args) => { _canvas.QueueDraw();};
-            
+            _allowRandom.Toggled += (o, args) => {
+                if (_allowRandom.Active){
+                    Random_PolygonColor();
+                }
+                else{
+                    SetColor_toPolygonColor();
+                }
+                _canvas.QueueDraw();
+            };
+
             #endregion
         }
 
         #region Отрисовка фигруы
         
-        private void DrawPolygon(Context context, Polygon polygon)
-        {
+        // Id нужен для сохранения рандомного цвета
+        private void DrawPolygon(Context context, Polygon polygon, int Id){
             if (polygon.Vertexes.Count == 0)
                 return;
             if (_allowInvisPoly.Active && polygon.CalculateNormal().Z < 0)
@@ -156,24 +201,24 @@ namespace CG
             
             if (_allowWireframe.Active == false)
             {
-                context.SetSourceRGB(0, 0.128, 0.255);
+                context.SetSourceRGB(_polygonColor[Id].R, _polygonColor[Id].G, _polygonColor[Id].B);
                 context.FillPreserve();
             }
             
-            context.SetSourceRGB(.5, 1, .5);
+            context.SetSourceRGB(_lineColor.R, _lineColor.G, _lineColor.B);
             context.Stroke();
         }
 
-        private void DrawMesh(Context context, Mesh mesh)
-        {
+        private void DrawMesh(Context context, Mesh mesh){
+            int i = 0;
             foreach (var polygon in mesh.TransformedPolygons)
             {
-                DrawPolygon(context, polygon);
+                DrawPolygon(context, polygon, i);
+                i++;
             }
         }
 
-        private void DrawNormal(Context context, Polygon polygon)
-        {
+        private void DrawNormal(Context context, Polygon polygon){
             if (_allowInvisPoly.Active && polygon.CalculateNormal().Z < 0)
                 return;
             
@@ -189,7 +234,7 @@ namespace CG
             context.MoveTo(polygonCenter.X, polygonCenter.Y);
             context.LineTo(polygonCenter.X + normal.X, polygonCenter.Y + normal.Y);
             
-            context.SetSourceRGB(.0, 1, 1);
+            context.SetSourceRGB(_normalColor.R, _normalColor.G, _normalColor.B);
             context.Stroke();
         }
         
@@ -213,8 +258,10 @@ namespace CG
             
             _transformationMatrix *= Matrix4x4.CreateTranslation((float)_xShift.Value, (float)_yShift.Value, (float)_zShift.Value);
             
-            #region Обновление спинбатоннов для матрицы
+            UpdateSpinButtons();
+        }
 
+        private void UpdateSpinButtons(){
             _m11.Value = _transformationMatrix.M11;
             _m12.Value = _transformationMatrix.M12;
             _m13.Value = _transformationMatrix.M13;
@@ -231,8 +278,6 @@ namespace CG
             _m42.Value = _transformationMatrix.M42;
             _m43.Value = _transformationMatrix.M43;
             _m44.Value = _transformationMatrix.M44;
-            
-            #endregion
         }
     }
 }

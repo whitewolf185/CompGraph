@@ -16,4 +16,8 @@
         <PackageReference Include="GtkSharp" Version="3.24.24.*" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="pics" />
+    </ItemGroup>
+
 </Project>
