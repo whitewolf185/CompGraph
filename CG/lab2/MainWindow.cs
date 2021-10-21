@@ -80,7 +80,7 @@ namespace CG
         #region Colors
 
         private ColorControl _canvasColor = new ColorControl(.2, .2, .2);
-        private List<ColorControl> _polygonColor = new List<ColorControl>();
+        private ListOfColorControl _polygonColor = new ListOfColorControl();
         private ColorControl _lineColor = new ColorControl(.5, 1, .5);
         private ColorControl _normalColor = new ColorControl(.0, 1, 1);
 
@@ -116,31 +116,13 @@ namespace CG
             CalculateTranformationMatrix();
         }
 
-        private void createColor_toPolygonColor(){
-            for (int i = 0; i < POLYGONS; i++){
-                _polygonColor.Add(new ColorControl(0, .2, .2));
-            }
-        }
-
-        private void SetColor_toPolygonColor(){
-            for (int i = 0; i < POLYGONS; i++){
-                _polygonColor[i].SetColor(0, .2, .2);
-            }
-        }
-
-        private void Random_PolygonColor(){
-            for (int i = 0; i < POLYGONS; i++){
-                _polygonColor[i].GenerateColor();
-            }
-        }
-
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
             DeleteEvent += (o, args) => Application.Quit();
             
             // нужна для инициализации list
-            createColor_toPolygonColor();
+            _polygonColor.createColor_toPolygonColor(POLYGONS);
 
             _canvas.Drawn += (o, args) => {
                 var context = args.Cr;
@@ -202,10 +184,10 @@ namespace CG
             _allowZBuffer.Toggled += (o, args) => { _canvas.QueueDraw();};
             _allowRandom.Toggled += (o, args) => {
                 if (_allowRandom.Active){
-                    Random_PolygonColor();
+                    _polygonColor.Random_PolygonColor(POLYGONS);
                 }
                 else{
-                    SetColor_toPolygonColor();
+                    _polygonColor.SetColor_toPolygonColor(POLYGONS);
                 }
                 _canvas.QueueDraw();
             };
@@ -321,7 +303,7 @@ namespace CG
             
             if (_allowWireframe.Active == false)
             {
-                context.SetSourceRGB(_polygonColor[Id].R, _polygonColor[Id].G, _polygonColor[Id].B);
+                context.SetSourceRGB(_polygonColor.colorList[Id].R, _polygonColor.colorList[Id].G, _polygonColor.colorList[Id].B);
                 context.FillPreserve();
             }
             
