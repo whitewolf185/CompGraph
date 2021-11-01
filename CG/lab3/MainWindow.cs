@@ -350,7 +350,7 @@ namespace CG
                                   Matrix4x4.CreateRotationZ((float)(_zRotation.Value * Math.PI / 180)) * 
                                   mouseRotation;
                     
-                    //для углов Эйлера
+                    
                     MatrixToAngles(currnetRotation, out var x, out var y, out var z);
                     _xRotation.Value = x;
                     _yRotation.Value = y;
@@ -410,12 +410,12 @@ namespace CG
             }
             else
             {
-                //фоновая составляющая
-                Vector3 I_a = new Vector3((float).04,(float).03,(float).8);
+                
+                Vector3 I_a = new Vector3((float)_k_aR.Value,(float)_k_aG.Value,(float)_k_aB.Value);
 
                 if (_lightingModel.Active == (int) Shading.Flat)
                 {
-                    //рассеяная составляющая
+                    
                     Vector4 L = _pointLight.TransformedPosition - polygon.CalculateCenter();
                     Vector4 N = polygon.CalculateNormal();
                     float cosLN = (float) (Vector4.Dot(L, N) / (L.Length() * N.Length()));
@@ -423,16 +423,16 @@ namespace CG
                                               (float) (_k_dG.Value * _pointLightIntensityG.Value * Math.Max(0, cosLN)),
                                               (float) (_k_dB.Value * _pointLightIntensityB.Value * Math.Max(0, cosLN)));
                     
-                    // все в преобразованном базисе. поэтому надо поделить на _defaultScale
+                    
                     I_d /= (float)(Math.Pow(L.Length(), 2) * (_attenuationСoefficient.Value / Math.Pow(_defaultScale, 2)));
                     
-                    //отраженная составляющая
+                    
                     Vector3 I_s;
                     if (cosLN > 0)
                     {
-                        //все происходит в базисе экрана!!!
+                        
                         Vector4 normalizedL = L / L.Length();
-                        Vector4 R = ((cosLN * N) - normalizedL) + N * cosLN; //отраженный от порехности вектор
+                        Vector4 R = ((cosLN * N) - normalizedL) + N * cosLN; 
                         Vector4 S = new Vector4(0, 0, 1, 0);
 
                         float cosRSp = (float) Math.Pow(Math.Max(0, (float) (Vector4.Dot(R, S) / (R.Length() * S.Length()))),
@@ -441,8 +441,8 @@ namespace CG
                         I_s = new Vector3((float) (_k_sR.Value * _pointLightIntensityR.Value * cosRSp),
                                           (float) (_k_sG.Value * _pointLightIntensityG.Value * cosRSp),
                                           (float) (_k_sB.Value * _pointLightIntensityB.Value * cosRSp));
-                        // отражение не должно затухать от расстояния, кажется
-                        // I_s /= (float)(Math.Pow(L.Length(), 2) * (_attenuationСoefficient.Value / Math.Pow(_defaultScale, 2)));
+                        
+                        
                     }
                     else I_s = Vector3.Zero;
 
@@ -459,7 +459,7 @@ namespace CG
                     
                     foreach (Vertex vertex in polygon.Vertexes)
                     {
-                        //рассеяная составляющая
+                        
                         Vector4 L = _pointLight.TransformedPosition - vertex.Point;
                         Vector4 N = vertex.CalculateNormal();
                         float cosLN = (float) (Vector4.Dot(L, N) / (L.Length() * N.Length()));
@@ -468,13 +468,13 @@ namespace CG
                                                   (float) (_k_dB.Value * _pointLightIntensityB.Value * Math.Max(0, cosLN)));
                         I_d /= (float)(Math.Pow(L.Length(), 2) * (_attenuationСoefficient.Value / Math.Pow(_defaultScale, 2)));
                         
-                        //отраженная составляющая
+                        
                         Vector3 I_s;
                         if (cosLN > 0)
                         {
-                            //все происходит в базисе экрана!!!
+                            
                             Vector4 normalizedL = L / L.Length();
-                            Vector4 R = ((cosLN * N) - normalizedL) + N * cosLN; //отраженный от порехности вектор
+                            Vector4 R = ((cosLN * N) - normalizedL) + N * cosLN; 
                             Vector4 S = new Vector4(0, 0, 1, 0);
 
                             float cosRSp = (float) Math.Pow(Math.Max(0, (float) (Vector4.Dot(R, S) / (R.Length() * S.Length()))),
@@ -482,15 +482,12 @@ namespace CG
                             I_s = new Vector3((float) (_k_sR.Value * _pointLightIntensityR.Value * cosRSp),
                                               (float) (_k_sG.Value * _pointLightIntensityG.Value * cosRSp),
                                               (float) (_k_sB.Value * _pointLightIntensityB.Value * cosRSp));
-                            // отражение не должно затухать от расстояния, кажется
-                            // I_s /= (float)(Math.Pow(L.Length(), 2) * (_attenuationСoefficient.Value / Math.Pow(_defaultScale, 2)));
                         }
                         else I_s = Vector3.Zero;
                         
                         vertexesTrueColor.Add((I_a + I_d + I_s) * vertex.Color);
                     }
                     
-                    //заливка работает только для треугольников!!!
                     _surface.DrawTriangle(vertexesTrueColor[0],  new Vector2(polygon.Vertexes[0].Point.X, polygon.Vertexes[0].Point.Y), 
                                           vertexesTrueColor[1], new Vector2(polygon.Vertexes[1].Point.X, polygon.Vertexes[1].Point.Y), 
                                           vertexesTrueColor[2], new Vector2(polygon.Vertexes[2].Point.X, polygon.Vertexes[2].Point.Y));
@@ -539,32 +536,6 @@ namespace CG
             
             context.SetSourceRGB(0, 1, 1);
             context.Stroke();
-
-            #region отладочная отрисовка для отраженной составляющей
-            
-            // Vector4 L = _pointLight.Position - polygon.CalculateCenter();
-            // L = Vector4.Transform(L, _transformationMatrix * _defaultTransformationMatrix);
-            // L /= L.Length();
-            // L *= 50;
-            // Vector4 N = Vector4.Transform(polygon.CalculateNormal(), _transformationMatrix * _defaultTransformationMatrix);
-            // N /= N.Length();
-            // N *= 50;
-            // float cosLN = (float)(Vector4.Dot(L, N) / (L.Length() * N.Length()));
-            // Vector4 R = ((cosLN * N) - L) + N * cosLN;
-            //
-            // context.MoveTo(polygonCenter.X, polygonCenter.Y);
-            // context.LineTo(polygonCenter.X + L.X, polygonCenter.Y + L.Y);
-            //
-            // context.SetSourceRGB(0, 1, 0);
-            // context.Stroke();
-            //
-            // context.MoveTo(polygonCenter.X, polygonCenter.Y);
-            // context.LineTo(polygonCenter.X + R.X, polygonCenter.Y + R.Y);
-            //
-            // context.SetSourceRGB(1, 0, 0);
-            // context.Stroke();
-            
-            #endregion
         }
         
         private void DrawNormals(Context context, Mesh mesh)
@@ -649,7 +620,7 @@ namespace CG
         
         private static void MatrixToAngles(Matrix4x4 matrix, out double x, out double y, out double z)
         {
-            //область определения аркстангенса от pi/2 до -pi/2
+            
             x = Math.Atan2(matrix.M23, matrix.M33) / Math.PI * 180;
             y = Math.Atan2(-matrix.M13, Math.Sqrt(1 - matrix.M13 * matrix.M13)) / Math.PI * 180;
             z = Math.Atan2(matrix.M12, matrix.M11) / Math.PI * 180;
