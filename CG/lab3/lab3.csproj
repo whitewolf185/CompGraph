@@ -6,6 +6,10 @@
         <RootNamespace>CG</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
     <ItemGroup>
         <None Remove="**\*.glade" />
         <EmbeddedResource Include="**\*.glade">

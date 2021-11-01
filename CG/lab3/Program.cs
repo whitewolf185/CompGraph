@@ -10,7 +10,7 @@ namespace CG
         {
             Application.Init();
 
-            var app = new Application("org.CGLab2.CGLab2", GLib.ApplicationFlags.None);
+            var app = new Application("org.CGLab3.CGLab3", GLib.ApplicationFlags.None);
             app.Register(GLib.Cancellable.Current);
 
             var win = new MainWindow();
