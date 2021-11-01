@@ -58,10 +58,6 @@ namespace CG
         
         [UI] private Adjustment _p = null;
 
-        [UI] private Adjustment _ambientLightColorR = null;
-        [UI] private Adjustment _ambientLightColorG = null;
-        [UI] private Adjustment _ambientLightColorB = null;
-        
         [UI] private CheckButton _allowPointLightVisible = null;
             
         [UI] private Adjustment _pointLightIntensityR = null;
@@ -235,21 +231,14 @@ namespace CG
                     (float)_a.Value,
                     (int)_meridiansCount.Value, 
                     (int)_parallelsCount.Value); 
-                    _canvas.QueueDraw();};
-            _b.ValueChanged += (o, args) => { _figure = new Ellipsoid(
-                    (float)_a.Value,
-                    (int)_meridiansCount.Value, 
-                    (int)_parallelsCount.Value); 
-                    _canvas.QueueDraw();};
-            _c.ValueChanged += (o, args) => { _figure = new Ellipsoid(
-                    (float)_a.Value,
-                    (int)_meridiansCount.Value, 
-                    (int)_parallelsCount.Value); 
+                _figure.TriangulateSquares();
                     _canvas.QueueDraw();};
             _meridiansCount.ValueChanged += (o, args) => { _figure = new Ellipsoid(
                     (float)_a.Value,
                     (int)_meridiansCount.Value, 
-                    (int)_parallelsCount.Value); 
+                    (int)_parallelsCount.Value
+                    ); 
+                _figure.TriangulateSquares();
                     _canvas.QueueDraw();};
             _parallelsCount.ValueChanged += (o, args) => { 
                 _figure = new Ellipsoid(
@@ -257,6 +246,7 @@ namespace CG
                     (int)_meridiansCount.Value, 
                     (int)_parallelsCount.Value
                 ); 
+                _figure.TriangulateSquares();
                     _canvas.QueueDraw();};
 
             _materialColorR.ValueChanged += (o, args) => {_figure.SetColor((float)_materialColorR.Value, 
@@ -285,10 +275,6 @@ namespace CG
             _k_sB.ValueChanged += (o, args) => {_canvas.QueueDraw();};
             
             _p.ValueChanged += (o, args) => {_canvas.QueueDraw();};
-            
-            _ambientLightColorR.ValueChanged += (o, args) => {_canvas.QueueDraw();};
-            _ambientLightColorG.ValueChanged += (o, args) => {_canvas.QueueDraw();};
-            _ambientLightColorB.ValueChanged += (o, args) => {_canvas.QueueDraw();};
 
             _allowPointLightVisible.Toggled += (o, args) => {_canvas.QueueDraw(); };
 
@@ -425,9 +411,7 @@ namespace CG
             else
             {
                 //фоновая составляющая
-                Vector3 I_a = new Vector3((float)_ambientLightColorR.Value,
-                                          (float)_ambientLightColorG.Value,
-                                          (float)_ambientLightColorB.Value);
+                Vector3 I_a = new Vector3((float).04,(float).03,(float).8);
 
                 if (_lightingModel.Active == (int) Shading.Flat)
                 {
