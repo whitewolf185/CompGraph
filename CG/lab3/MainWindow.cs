@@ -232,14 +232,20 @@ namespace CG
                     (int)_meridiansCount.Value, 
                     (int)_parallelsCount.Value); 
                 _figure.TriangulateSquares();
-                    _canvas.QueueDraw();};
+                _figure.SetColor((float)_materialColorR.Value,
+                    (float)_materialColorG.Value,
+                    (float)_materialColorB.Value);
+                _canvas.QueueDraw();};
             _meridiansCount.ValueChanged += (o, args) => { _figure = new Ellipsoid(
                     (float)_a.Value,
                     (int)_meridiansCount.Value, 
                     (int)_parallelsCount.Value
                     ); 
                 _figure.TriangulateSquares();
-                    _canvas.QueueDraw();};
+                _figure.SetColor((float)_materialColorR.Value,
+                    (float)_materialColorG.Value,
+                    (float)_materialColorB.Value);
+                _canvas.QueueDraw();};
             _parallelsCount.ValueChanged += (o, args) => { 
                 _figure = new Ellipsoid(
                     (float)_a.Value,
@@ -247,7 +253,10 @@ namespace CG
                     (int)_parallelsCount.Value
                 ); 
                 _figure.TriangulateSquares();
-                    _canvas.QueueDraw();};
+                _figure.SetColor((float)_materialColorR.Value,
+                    (float)_materialColorG.Value,
+                    (float)_materialColorB.Value);
+                _canvas.QueueDraw();};
 
             _materialColorR.ValueChanged += (o, args) => {_figure.SetColor((float)_materialColorR.Value, 
                                                                                  (float)_materialColorG.Value, 
