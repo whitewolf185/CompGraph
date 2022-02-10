@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CGPlatform", "CGPlatform\CG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lab7", "lab7\lab7.csproj", "{F5A05107-E24D-4DA5-A200-DDD5554D3E9A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CGCourseWork", "CGCourseWork\CGCourseWork.csproj", "{08A12D56-EE86-4724-B0C4-6CA46AE9B177}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{F5A05107-E24D-4DA5-A200-DDD5554D3E9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5A05107-E24D-4DA5-A200-DDD5554D3E9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5A05107-E24D-4DA5-A200-DDD5554D3E9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08A12D56-EE86-4724-B0C4-6CA46AE9B177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08A12D56-EE86-4724-B0C4-6CA46AE9B177}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08A12D56-EE86-4724-B0C4-6CA46AE9B177}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08A12D56-EE86-4724-B0C4-6CA46AE9B177}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

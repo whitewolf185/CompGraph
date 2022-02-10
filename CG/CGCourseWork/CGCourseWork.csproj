@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Extansions\polygon_normals.geom" />
+        <EmbeddedResource Include="Shaders\shader.frag" />
+        <EmbeddedResource Include="Shaders\shader.vert" />
+        <None Remove="**\*.glade" />
+        <EmbeddedResource Include="**\*.glade">
+            <LogicalName>%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="GtkSharp" Version="3.24.24.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CGPlatform\CGPlatform.csproj" />
+    </ItemGroup>
+
+</Project>
