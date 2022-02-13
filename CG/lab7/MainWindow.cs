@@ -237,8 +237,9 @@ namespace lab7
                 
                 gl.BindVertexArray(VAO[0]);
                 gl.UseProgram(shaderProgram);
-                gl.PointSize(6);
-                gl.DrawArrays(OpenGL.GL_POINTS, 0, mas.Count/2);
+                
+                gl.LineWidth(6);
+                gl.DrawArrays(OpenGL.GL_LINE_STRIP, 0, mas.Count/2);
                 gl.BindVertexArray(0);
 
 
