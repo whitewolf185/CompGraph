@@ -42,7 +42,6 @@ namespace CG
         [UI] private CheckButton _allowNormals = null;
         [UI] private CheckButton _allowWireframe = null;
         [UI] private CheckButton _allowInvisPoly = null;
-        [UI] private CheckButton _animate = null;
         //материал
         [UI] private Adjustment _materialColorR = null;
         [UI] private Adjustment _materialColorG = null;
@@ -108,9 +107,7 @@ namespace CG
 
         private bool _figureChanged = true;
         private bool _pointLightChanged = true;
-
-        private uint _startTime;
-
+        
         private enum FragmetShaderColorMode
         {
             DarkBlue,
@@ -142,7 +139,7 @@ namespace CG
                 }
             }
 
-            _figure = new Busie(control_points, 1f/16, 1f/16);
+            _figure = new Busie(control_points, 1f/300, 1f/16);
         }
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
