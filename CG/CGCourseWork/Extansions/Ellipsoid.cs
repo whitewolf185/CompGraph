@@ -63,11 +63,11 @@ namespace CG
 
     public class Busie : Mesh{
         public List<List<Vector3>> controlPoints = new List<List<Vector3>>();
-        private int stepX, stepY;
+        private float stepX, stepY;
 
         public void Update(){
             for (int i = 0; i < controlPoints.Count-1; i++){
-                for (int t = 0; t < 1; t +=stepY){
+                for (float t = 0; t < 1; t +=stepY){
                     List<Vector3> interpolitedControlPoints = new List<Vector3>();
                     for (int j = 0; j < controlPoints[i].Count; j++){
                         interpolitedControlPoints.Add(controlPoints[i][j] + t*controlPoints[i+1][j]);
@@ -117,7 +117,7 @@ namespace CG
             }
         }
 
-        public Busie(List<List<Vector3>> _contralPoints, int stepX, int stepY){
+        public Busie(List<List<Vector3>> _contralPoints, float stepX, float stepY){
             controlPoints = _contralPoints;
             this.stepX = stepX;
             this.stepY = stepY;
@@ -126,7 +126,7 @@ namespace CG
             List<List<uint>> indexes = new List<List<uint>>();
             
             for (int i = 0; i < controlPoints.Count-1; i++){
-                for (int t = 0; t < 1; t +=stepY){
+                for (float t = 0; t < 1; t +=stepY){
                     List<Vector3> interpolitedControlPoints = new List<Vector3>();
                     for (int j = 0; j < controlPoints[i].Count; j++){
                         interpolitedControlPoints.Add(controlPoints[i][j] + t*controlPoints[i+1][j]);
@@ -199,6 +199,18 @@ namespace CG
                     );
                 }
             }
+        }
+
+        public List<Vector3> GetControlPoints(){
+            List<Vector3> result = new List<Vector3>();
+
+            for (int i = 0; i < controlPoints.Count; i++){
+                for (int j = 0; j < controlPoints[i].Count; j++){
+                    result.Add(controlPoints[i][j]);
+                }
+            }
+            
+            return result;
         }
     }
 }

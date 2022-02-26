@@ -128,7 +128,7 @@ namespace CG
 
         private List<List<Vector3>> control_points = new List<List<Vector3>>();
 
-        private Mesh _figure;
+        private Busie _figure;
 
         #endregion
 
@@ -142,7 +142,7 @@ namespace CG
                 }
             }
 
-            _figure = new Busie(control_points, 16, 16);
+            _figure = new Busie(control_points, 1f/16, 1f/16);
         }
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
@@ -472,20 +472,23 @@ namespace CG
             }
             
             // создать объект вершинного массива
-            uint[] arrays = new uint[3];
-            gl.GenVertexArrays(3, arrays);
+            uint[] arrays = new uint[4];
+            gl.GenVertexArrays(4, arrays);
             uint mainVAO = arrays[0];
             uint normalsVAO = arrays[1];
             uint pointLightVAO = arrays[2];
+            uint controlPointsVAO = arrays[3];
             
             // создать буффер вершин
-            uint[] buffers = new uint[5];
-            gl.GenBuffers(5, buffers);
+            uint[] buffers = new uint[6];
+            gl.GenBuffers(6, buffers);
             uint VBO = buffers[0];
             uint VIO = buffers[1];
             uint normalsVBO = buffers[2];
             uint normalsVIO = buffers[3];
             uint pointLightVBO = buffers[4];
+            uint controlPointsVBO = buffers[5];
+
 
             uint[] indexes = new uint[] { };
             List<uint> normalIndexes = new List<uint>();
@@ -511,6 +514,12 @@ namespace CG
             gl.BindVertexArray(pointLightVAO);
                 gl.UseProgram(shaderProgram);
                 gl.BindBuffer(OpenGL.GL_ARRAY_BUFFER, pointLightVBO);
+                gl.VertexAttribPointer((uint)gl.GetAttribLocation(shaderProgram, "position"), 3, OpenGL.GL_FLOAT, false, 3 * sizeof(float), IntPtr.Zero);
+                gl.EnableVertexAttribArray((uint)gl.GetAttribLocation(shaderProgram, "position"));
+            gl.BindVertexArray(0);
+            gl.BindVertexArray(controlPointsVAO);
+                gl.UseProgram(shaderProgram);
+                gl.BindBuffer(OpenGL.GL_ARRAY_BUFFER, controlPointsVBO);
                 gl.VertexAttribPointer((uint)gl.GetAttribLocation(shaderProgram, "position"), 3, OpenGL.GL_FLOAT, false, 3 * sizeof(float), IntPtr.Zero);
                 gl.EnableVertexAttribArray((uint)gl.GetAttribLocation(shaderProgram, "position"));
             gl.BindVertexArray(0);
@@ -541,7 +550,7 @@ namespace CG
                 gl.ClearStencil(0);
 
                 #region отрисовка с разными опциями
-                
+                List<Vector3> controlList = _figure.GetControlPoints();
                 if (_figureChanged)
                 {
                     _figureChanged = false;
@@ -553,6 +562,16 @@ namespace CG
                                      (float) _materialColorB.Value);
                     
                     #region обновить буферы
+                    // обновить буффер контрол поинтов
+                    vertices = new List<float>();
+                    for (int i = 0; i < controlList.Count; i++){
+                        vertices.Add(controlList[i].X);
+                        vertices.Add(controlList[i].Y);
+                        vertices.Add(controlList[i].Z);
+                    }
+                    gl.BindBuffer(OpenGL.GL_ARRAY_BUFFER, controlPointsVBO);
+                    // данные о вершинах 
+                    gl.BufferData(OpenGL.GL_ARRAY_BUFFER, vertices.ToArray(), OpenGL.GL_DYNAMIC_DRAW);
 
                     //перевожу координаты верши в массив float
                     vertices = new List<float>();
@@ -628,19 +647,6 @@ namespace CG
                     #endregion
                 }
 
-                int animateLocation = gl.GetUniformLocation(shaderProgram, "animate");
-                int curTimeLocation = gl.GetUniformLocation(shaderProgram, "curTime");
-                if (_animate.Active)
-                {
-                    gl.Uniform1(animateLocation, 1);
-                    gl.Uniform1(curTimeLocation, (uint) frame_clock.FrameTime - _startTime);
-                }
-                else
-                {
-                    gl.Uniform1(animateLocation, 0);
-                    _startTime = (uint) frame_clock.FrameTime;
-                }
-                
                 int transformationMatrixLocation = gl.GetUniformLocation(shaderProgram, "transformation");
                 int scaleLocation = gl.GetUniformLocation(shaderProgram, "scale");
                 int materialK_aLocation = gl.GetUniformLocation(shaderProgram, "material.k_a");
@@ -729,6 +735,11 @@ namespace CG
                         gl.DrawElements(OpenGL.GL_LINES, normalIndexes.Count, OpenGL.GL_UNSIGNED_INT, IntPtr.Zero);
                     gl.BindVertexArray(0);
                 }
+                
+                gl.UseProgram(shaderProgram);
+                gl.BindVertexArray(controlPointsVAO); 
+                gl.Uniform1(gl.GetUniformLocation(polygonNormalsShaderProgram, "colorMode"), 1, new int[] {(int)FragmetShaderColorMode.Cyan});
+                gl.DrawArrays(OpenGL.GL_POINTS, 0, controlList.Count);
 
                 #endregion
             };
