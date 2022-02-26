@@ -125,15 +125,24 @@ namespace CG
         private PointLight _pointLight = new PointLight(3, 0, 0);
         private Camera _camera = new Camera(new Vector3(0f, -2.3f, 0f), new Vector3(90f, 0f, 0f), 
             1, 60, (float)0.01, (float)1000);
-        
-        private Mesh _figure = new Ellipsoid(1, 16, 8);
+
+        private List<List<Vector3>> control_points = new List<List<Vector3>>();
+
+        private Mesh _figure;
 
         #endregion
 
         public MainWindow() : this(new Builder("CGCourseWork.glade"))
         {
             _cameraTransformationMatrix = _camera.CalculateProjectionMatrix() * _camera.CalculateViewMatrix();
-            _figure.TriangulateSquares();
+            for (int i = 0; i < 4; i++){
+                control_points.Add(new List<Vector3>());
+                for (int j = 0; j < 4; j++){
+                    control_points[i].Add(new Vector3(i,j, (i + j)/3));
+                }
+            }
+
+            _figure = new Busie(control_points, 16, 16);
         }
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
@@ -536,10 +545,9 @@ namespace CG
                 if (_figureChanged)
                 {
                     _figureChanged = false;
-                    _figure = new Ellipsoid((float) _r.Value,
-                        (int) _meridiansCount.Value,
-                        (int) _parallelsCount.Value);
-                    _figure.TriangulateSquares();
+                    // _figure = new Ellipsoid((float) _r.Value,
+                    //     (int) _meridiansCount.Value,
+                    //     (int) _parallelsCount.Value);
                     _figure.SetColor((float) _materialColorR.Value,
                                      (float) _materialColorG.Value,
                                      (float) _materialColorB.Value);
