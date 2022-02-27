@@ -33,7 +33,6 @@ namespace CG
         [UI] private Adjustment _clipStart = null;
         [UI] private Adjustment _clipEnd = null;
         //параметры полуэлипсойда
-        [UI] private Adjustment _r = null;
 
         [UI] private Adjustment _meridiansCount = null;
         [UI] private Adjustment _parallelsCount = null;
@@ -42,11 +41,7 @@ namespace CG
         [UI] private CheckButton _allowNormals = null;
         [UI] private CheckButton _allowWireframe = null;
         [UI] private CheckButton _allowInvisPoly = null;
-        //материал
-        [UI] private Adjustment _materialColorR = null;
-        [UI] private Adjustment _materialColorG = null;
-        [UI] private Adjustment _materialColorB = null;
-        
+
         [UI] private Adjustment _k_aR = null;
         [UI] private Adjustment _k_aG = null;
         [UI] private Adjustment _k_aB = null;
@@ -72,6 +67,13 @@ namespace CG
         [UI] private Adjustment _pointLightPositionZ = null;
         
         [UI] private Adjustment _attenuationСoefficient = null;
+        
+        // параметры активной точки
+        [UI] private Adjustment _activeVertexPositionX = null;
+        [UI] private Adjustment _activeVertexPositionY = null;
+        [UI] private Adjustment _activeVertexPositionZ = null;
+        [UI] private Adjustment _stepX = null;
+        [UI] private Adjustment _stepY = null;
         #endregion
 
         #region UI матрицы
@@ -101,6 +103,9 @@ namespace CG
         private uint _mousePressedButton;
 
         #endregion
+
+        float minDist = 1000000000;
+        int minInd = -1;
 
         private float _mouseRotationSensitivity = 1f / 1000f;
         private Matrix4x4 _cameraTransformationMatrix;
@@ -139,7 +144,7 @@ namespace CG
                 }
             }
 
-            _figure = new Busie(control_points, 1f/300, 1f/16);
+            _figure = new Busie(control_points, 1/(float)_stepX.Value, 1f/(float)_stepY.Value);
         }
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
@@ -224,18 +229,54 @@ namespace CG
                 _cameraTransformationMatrix = _camera.CalculateProjectionMatrix() * _camera.CalculateViewMatrix();
                 updateTranformationMatrixAdjustments();
             };
-
-            _r.ValueChanged += (o, args) => {_figureChanged = true;};
-            _meridiansCount.ValueChanged += (o, args) => {_figureChanged = true;};
-            _parallelsCount.ValueChanged += (o, args) => {_figureChanged = true;};
+            
+            _stepX.ValueChanged += (o, args) => {_figureChanged = true;};
+            _stepY.ValueChanged += (o, args) => {_figureChanged = true;};
             
             _pointLightPositionX.ValueChanged += (o, args) => {_pointLightChanged = true;};
             _pointLightPositionY.ValueChanged += (o, args) => {_pointLightChanged = true;};
             _pointLightPositionZ.ValueChanged += (o, args) => {_pointLightChanged = true;};
 
-            _materialColorR.ValueChanged += (o, args) => {_figureChanged = true;};
-            _materialColorG.ValueChanged += (o, args) => {_figureChanged = true;};
-            _materialColorB.ValueChanged += (o, args) => {_figureChanged = true;};
+            #region Обработка активной точки
+
+            _activeVertexPositionX.ValueChanged += (o, args) =>
+            {
+                if (minInd != -1)
+                {
+                    for (int i = 0; i < 4; i++){
+                        for (int j = 0; j < 4; j++){
+                            control_points[i][j] = new Vector3((float)_activeVertexPositionX.Value,(float)_activeVertexPositionY.Value, (float)_activeVertexPositionZ.Value);
+                        }
+                    }
+                    _figureChanged = true;
+                }
+            };
+            _activeVertexPositionY.ValueChanged += (o, args) =>
+            {
+                if (minInd != -1)
+                {
+                    for (int i = 0; i < 4; i++){
+                        for (int j = 0; j < 4; j++){
+                            control_points[i][j] = new Vector3((float)_activeVertexPositionX.Value,(float)_activeVertexPositionY.Value, (float)_activeVertexPositionZ.Value);
+                        }
+                    }
+                    _figureChanged = true;
+                }
+            };
+            _activeVertexPositionZ.ValueChanged += (o, args) =>
+            {
+                if (minInd != -1)
+                {
+                    for (int i = 0; i < 4; i++){
+                        for (int j = 0; j < 4; j++){
+                            control_points[i][j] = new Vector3((float)_activeVertexPositionX.Value,(float)_activeVertexPositionY.Value, (float)_activeVertexPositionZ.Value);
+                        }
+                    }
+                    _figureChanged = true;
+                }
+            };
+
+            #endregion
             
             #endregion
 
@@ -318,6 +359,38 @@ namespace CG
                 _mousePressedButton = args.Event.Button;
                 _mousePosition.X = (float) args.Event.X;
                 _mousePosition.Y = (float) args.Event.Y;
+                
+                Vector4 position = new Vector4((float) (args.Event.X - (float) _glArea.AllocatedWidth / 2) / ((float) _glArea.AllocatedWidth / 2), 
+                    (float) -(args.Event.Y - (float) Window.Height / 2) / ((float) Window.Height / 2), 0f, 1);
+
+                if (_mousePressedButton == 2)
+                {
+                    minDist = 1000000000;
+                    minInd = -1;
+                    List<Vector3> controlList = _figure.GetControlPoints();
+                    for (int i = 0; i < controlList.Count; ++i)
+                    {
+                        Vector4 pointScreenPosition = Vector4.Transform(new Vector4(controlList[i].X, controlList[i].Y, controlList[i].Z, 1), Matrix4x4.Transpose(_cameraTransformationMatrix));
+                        pointScreenPosition /= pointScreenPosition.W;
+                        pointScreenPosition.Z = 0;
+                        if ((position - pointScreenPosition).Length() < minDist)
+                        {
+                            minDist = (position - pointScreenPosition).Length();
+                            minInd = i;
+                        }
+                    }
+                    if (minDist > 0.1)
+                    {
+                        minInd = -1;
+                    }
+
+                    if (minInd != -1)
+                    {
+                        _activeVertexPositionX.Value = controlList[minInd].X;
+                        _activeVertexPositionY.Value = controlList[minInd].Y;
+                        _activeVertexPositionZ.Value = controlList[minInd].Z;
+                    }
+                }
             };
 
             _glArea.MotionNotifyEvent += (o, args) =>
@@ -335,18 +408,45 @@ namespace CG
                     _zPosition.Value += shift.Z;
                 }
 
+                // if (_mousePressedButton == 2)
+                // {
+                //     if (minInd != -1)
+                //     {
+                //         List<Vector3> controlList = _figure.GetControlPoints();
+                //         
+                //         Vector4 shift = new Vector4((float) (_currentMousePosition.X - _mousePosition.X) / ((float) _glArea.AllocatedWidth / 2),
+                //             (float) -(_currentMousePosition.Y - _mousePosition.Y) / ((float) _glArea.AllocatedHeight / 2), 0f, 0f);
+                //         Vector4 screenPosition = Vector4.Transform(_kinematicSurface.GuideCurve.Points[minInd],
+                //             Matrix4x4.Transpose(_cameraTransformationMatrix));
+                //         screenPosition /= screenPosition.W;
+                //         screenPosition += shift;
+                //         
+                //         Matrix4x4 inverseTransformation = new Matrix4x4();
+                //         Matrix4x4.Invert(Matrix4x4.Transpose(_cameraTransformationMatrix), out inverseTransformation);
+                //         _kinematicSurface.GuideCurve.Points[minInd] = Vector4.Transform(screenPosition, inverseTransformation);
+                //         
+                //         _kinematicSurface.GuideCurve.Points[minInd] /= _kinematicSurface.GuideCurve.Points[minInd].W;
+                //
+                //         _activeVertexPositionX.Value = _kinematicSurface.GuideCurve.Points[minInd].X;
+                //         _activeVertexPositionY.Value = _kinematicSurface.GuideCurve.Points[minInd].Y;
+                //         _activeVertexPositionZ.Value = _kinematicSurface.GuideCurve.Points[minInd].Z;
+                //         
+                //         _figureChanged = true;
+                //     }
+                // }
+
                 if (_mousePressedButton == 3)
                 {
                     Matrix4x4 mouseRotation = Matrix4x4.CreateRotationX((_currentMousePosition.Y - _mousePosition.Y) * _mouseRotationSensitivity);
                     mouseRotation *= Matrix4x4.CreateRotationY((_currentMousePosition.X - _mousePosition.X) * _mouseRotationSensitivity);
 
-                    Matrix4x4 currnetRotation = mouseRotation * 
+                    Matrix4x4 currentRotation = mouseRotation * 
                                                 Matrix4x4.CreateRotationX((float) (_xRotation.Value * Math.PI / 180)) *
                                                 Matrix4x4.CreateRotationY((float) (_yRotation.Value * Math.PI / 180)) *
                                                 Matrix4x4.CreateRotationZ((float) (_zRotation.Value * Math.PI / 180));
 
                     //для углов Эйлера
-                    MatrixToAngles(currnetRotation, out var x, out var y, out var z);
+                    MatrixToAngles(currentRotation, out var x, out var y, out var z);
                     _xRotation.Value = x;
                     _yRotation.Value = y;
                     _zRotation.Value = z;
@@ -551,13 +651,8 @@ namespace CG
                 if (_figureChanged)
                 {
                     _figureChanged = false;
-                    // _figure = new Ellipsoid((float) _r.Value,
-                    //     (int) _meridiansCount.Value,
-                    //     (int) _parallelsCount.Value);
-                    _figure.SetColor((float) _materialColorR.Value,
-                                     (float) _materialColorG.Value,
-                                     (float) _materialColorB.Value);
-                    
+                    _figure = new Busie(control_points, 1/(float)_stepX.Value, 1f/(float)_stepY.Value);
+
                     #region обновить буферы
                     // обновить буффер контрол поинтов
                     vertices = new List<float>();
@@ -656,7 +751,6 @@ namespace CG
                 int cameraPositionLocation = gl.GetUniformLocation(shaderProgram, "cameraPosition");
                 
                 gl.UniformMatrix4(transformationMatrixLocation, 1, false,  ToArray(_cameraTransformationMatrix));
-                gl.Uniform3(scaleLocation, (float) _r.Value,(float) _r.Value,(float) _r.Value);
                 gl.Uniform3(materialK_aLocation, (float)_k_aR.Value, (float)_k_aG.Value, (float)_k_aB.Value);
                 gl.Uniform3(materialK_dLocation, (float)_k_dR.Value, (float)_k_dG.Value, (float)_k_dB.Value);
                 gl.Uniform3(materialK_sLocation, (float)_k_sR.Value, (float)_k_sG.Value, (float)_k_sB.Value);

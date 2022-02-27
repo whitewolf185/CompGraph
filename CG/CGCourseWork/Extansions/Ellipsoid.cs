@@ -66,58 +66,6 @@ namespace CG
         public List<List<Vector3>> controlPoints = new List<List<Vector3>>();
         private float stepX, stepY;
 
-        // public void Update(){
-        //     for (int i = 0; i < controlPoints.Count-1; i++){
-        //         for (float t = 0; t < 1; t +=stepY){
-        //             List<Vector3> interpolitedControlPoints = new List<Vector3>();
-        //             for (int j = 0; j < controlPoints[i].Count; j++){
-        //                 interpolitedControlPoints.Add(controlPoints[i][j] + t*controlPoints[i+1][j]);
-        //             }
-        //
-        //             uint count = 0;
-        //             for (int u = 0; u < interpolitedControlPoints.Count-4; u += 3){
-        //                 for (float v = 0; v < 1; v += stepX)
-        //                 {
-        //                     Vertices[(int)count].Position = new Vector4(
-        //                         interpolitedControlPoints[u].X * (1 - v)*(1 - v)*(1 - v) 
-        //                                         + 3 * v * (1 - v)*(1 - v) * interpolitedControlPoints[u + 1].X 
-        //                                         + 3 * v*v * (1 - v) * interpolitedControlPoints[u + 2].X
-        //                                         + v * v * v * interpolitedControlPoints[u + 3].X,
-        //                         interpolitedControlPoints[u].Y * (1 - v)*(1 - v)*(1 - v) 
-        //                         + 3 * v * (1 - v)*(1 - v) * interpolitedControlPoints[u + 1].Y 
-        //                         + 3 * v*v * (1 - v) * interpolitedControlPoints[u + 2].Y
-        //                         + v * v * v * interpolitedControlPoints[u + 3].Y,
-        //                         interpolitedControlPoints[u].Z * (1 - v)*(1 - v)*(1 - v) 
-        //                         + 3 * v * (1 - v)*(1 - v) * interpolitedControlPoints[u + 1].Z 
-        //                         + 3 * v*v * (1 - v) * interpolitedControlPoints[u + 2].Z
-        //                         + v * v * v * interpolitedControlPoints[u + 3].Z,
-        //                         1);
-        //                     ++count;
-        //                 }
-        //             }
-        //             
-        //             for (float v = 0; v < 1; v += stepX)
-        //             {
-        //                 Vertices[(int)count].Position = new Vector4(
-        //                     interpolitedControlPoints[^4].X * (1 - v)*(1 - v)*(1 - v) 
-        //                     + 3 * v * (1 - v)*(1 - v) * interpolitedControlPoints[^3].X 
-        //                     + 3 * v*v * (1 - v) * interpolitedControlPoints[^2].X
-        //                     + v * v * v * interpolitedControlPoints[^1].X,
-        //                     interpolitedControlPoints[^4].Y * (1 - v)*(1 - v)*(1 - v) 
-        //                     + 3 * v * (1 - v)*(1 - v) * interpolitedControlPoints[^3].Y 
-        //                     + 3 * v*v * (1 - v) * interpolitedControlPoints[^2].Y
-        //                     + v * v * v * interpolitedControlPoints[^1].Y,
-        //                     interpolitedControlPoints[^4].Z * (1 - v)*(1 - v)*(1 - v) 
-        //                     + 3 * v * (1 - v)*(1 - v) * interpolitedControlPoints[^3].Z 
-        //                     + 3 * v*v * (1 - v) * interpolitedControlPoints[^2].Z
-        //                     + v * v * v * interpolitedControlPoints[^1].Z
-        //                     ,1);
-        //                 ++count;
-        //             }
-        //         }
-        //     }
-        // }
-
         public Busie(List<List<Vector3>> _controlPoints, float stepX, float stepY)
         {
             controlPoints = _controlPoints;
