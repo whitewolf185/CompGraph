@@ -243,11 +243,7 @@ namespace CG
             {
                 if (minInd != -1)
                 {
-                    for (int i = 0; i < 4; i++){
-                        for (int j = 0; j < 4; j++){
-                            control_points[i][j] = new Vector3((float)_activeVertexPositionX.Value,(float)_activeVertexPositionY.Value, (float)_activeVertexPositionZ.Value);
-                        }
-                    }
+                    control_points[minInd/4][minInd%4] = new Vector3((float)_activeVertexPositionX.Value,control_points[minInd/4][minInd%4].Y, control_points[minInd/4][minInd%4].Z);
                     _figureChanged = true;
                 }
             };
@@ -255,11 +251,7 @@ namespace CG
             {
                 if (minInd != -1)
                 {
-                    for (int i = 0; i < 4; i++){
-                        for (int j = 0; j < 4; j++){
-                            control_points[i][j] = new Vector3((float)_activeVertexPositionX.Value,(float)_activeVertexPositionY.Value, (float)_activeVertexPositionZ.Value);
-                        }
-                    }
+                    control_points[minInd/4][minInd%4] = new Vector3(control_points[minInd/4][minInd%4].X,(float)_activeVertexPositionY.Value, control_points[minInd/4][minInd%4].Z);
                     _figureChanged = true;
                 }
             };
@@ -267,11 +259,7 @@ namespace CG
             {
                 if (minInd != -1)
                 {
-                    for (int i = 0; i < 4; i++){
-                        for (int j = 0; j < 4; j++){
-                            control_points[i][j] = new Vector3((float)_activeVertexPositionX.Value,(float)_activeVertexPositionY.Value, (float)_activeVertexPositionZ.Value);
-                        }
-                    }
+                    control_points[minInd/4][minInd%4] = new Vector3(control_points[minInd/4][minInd%4].X,control_points[minInd/4][minInd%4].Y, (float)_activeVertexPositionZ.Value);
                     _figureChanged = true;
                 }
             };
@@ -652,6 +640,7 @@ namespace CG
                 {
                     _figureChanged = false;
                     _figure = new Busie(control_points, 1/(float)_stepX.Value, 1f/(float)_stepY.Value);
+                    controlList = _figure.GetControlPoints();
 
                     #region обновить буферы
                     // обновить буффер контрол поинтов
@@ -830,7 +819,9 @@ namespace CG
                 gl.UseProgram(shaderProgram);
                 gl.BindVertexArray(controlPointsVAO); 
                 gl.Uniform1(gl.GetUniformLocation(polygonNormalsShaderProgram, "colorMode"), 1, new int[] {(int)FragmetShaderColorMode.Cyan});
+                gl.Disable(OpenGL.GL_DEPTH_TEST);
                 gl.DrawArrays(OpenGL.GL_POINTS, 0, controlList.Count);
+                gl.BindVertexArray(0);
 
                 #endregion
             };
